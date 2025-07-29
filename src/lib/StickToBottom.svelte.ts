@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type DependencyList, type MutableRefObject, type RefCallback, useMemo, useRef } from 'react'
+import { type DependencyList, type MutableRefObject, type RefCallback, useRef } from 'react'
 
 export interface StickToBottomState {
   scrollTop: number
