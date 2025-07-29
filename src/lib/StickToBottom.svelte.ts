@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type DependencyList, type MutableRefObject, type RefCallback, useRef } from 'react'
+import { type DependencyList, type MutableRefObject, type RefCallback } from 'react'
 
 export interface StickToBottomState {
   scrollTop: number
@@ -132,13 +132,15 @@ globalThis.document?.addEventListener('click', () => {
   mouseDown = false
 })
 
+// TODO: In Svelte, the options parameter needs special consideration for updates. Some ways:
+// Either the options must be passed reactively from an attachment call site, or documentation
+// should clarify that options cannot be reassigned and must be mutated in place,
+// otherwise the function will lose reference to updated options.
+// Or accept a function that returns options, which can be called to get the latest options.
 export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBottomInstance => {
   let escapedFromLock = $state(false)
   let isAtBottom = $state(options.initial !== false)
   let isNearBottom = $state(false)
-
-  const optionsRef = useRef<StickToBottomOptions>(null!)
-  optionsRef.current = options
 
   function isSelecting() {
     if (!mouseDown) {
@@ -271,7 +273,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     }
 
     const waitElapsed = Date.now() + (Number(scrollOptions.wait) || 0)
-    const behavior = mergeAnimations(optionsRef.current, scrollOptions.animation)
+    const behavior = mergeAnimations(options, scrollOptions.animation)
     const { ignoreEscapes = false } = scrollOptions
 
     let durationElapsed: number
@@ -345,7 +347,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
          */
         if (state.scrollTop < state.calculatedTargetScrollTop) {
           return scrollToBottom({
-            animation: mergeAnimations(optionsRef.current, optionsRef.current.resize),
+            animation: mergeAnimations(options, options.resize),
             ignoreEscapes,
             duration: Math.max(0, durationElapsed - Date.now()) || undefined,
           })
@@ -512,10 +514,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
          * If it's a positive resize, scroll to the bottom when
          * we're already at the bottom.
          */
-        const animation = mergeAnimations(
-          optionsRef.current,
-          previousHeight ? optionsRef.current.resize : optionsRef.current.initial
-        )
+        const animation = mergeAnimations(options, previousHeight ? options.resize : options.initial)
 
         scrollToBottom({
           animation,
