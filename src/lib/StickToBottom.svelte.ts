@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type DependencyList, type MutableRefObject, type RefCallback, useCallback, useMemo, useRef } from 'react'
+import { type DependencyList, type MutableRefObject, type RefCallback, useMemo, useRef } from 'react'
 
 export interface StickToBottomState {
   scrollTop: number
@@ -565,10 +565,10 @@ export interface StickToBottomInstance {
 
 function useRefCallback<T extends (ref: HTMLElement | null) => any>(callback: T, deps: DependencyList) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: not needed
-  const result = useCallback((ref: HTMLElement | null) => {
+  const result = ((ref: HTMLElement | null) => {
     result.current = ref
     return callback(ref)
-  }, deps) as any as MutableRefObject<HTMLElement | null> & RefCallback<HTMLElement>
+  }) as any as MutableRefObject<HTMLElement | null> & RefCallback<HTMLElement>
 
   return result
 }
