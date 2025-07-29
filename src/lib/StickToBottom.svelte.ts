@@ -140,7 +140,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
   const optionsRef = useRef<StickToBottomOptions>(null!)
   optionsRef.current = options
 
-  const isSelecting = useCallback(() => {
+  function isSelecting() {
     if (!mouseDown) {
       return false
     }
@@ -155,17 +155,17 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       range.commonAncestorContainer.contains(scrollRef.current) ||
       scrollRef.current?.contains(range.commonAncestorContainer)
     )
-  }, [])
+  }
 
-  const setIsAtBottom = useCallback((newIsAtBottom: boolean) => {
+  function setIsAtBottom(newIsAtBottom: boolean) {
     state.isAtBottom = newIsAtBottom
     isAtBottom = newIsAtBottom
-  }, [])
+  }
 
-  const setEscapedFromLock = useCallback((newEscapedFromLock: boolean) => {
+  function setEscapedFromLock(newEscapedFromLock: boolean) {
     state.escapedFromLock = newEscapedFromLock
     escapedFromLock = newEscapedFromLock
-  }, [])
+  }
 
   const setIsNearBottom = (newIsNearBottom: boolean) => {
     isNearBottom = newIsNearBottom
@@ -364,10 +364,10 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     [setIsAtBottom, isSelecting, state]
   )
 
-  const stopScroll = useCallback((): void => {
+  function stopScroll(): void {
     setEscapedFromLock(true)
     setIsAtBottom(false)
-  }, [setEscapedFromLock, setIsAtBottom])
+  }
 
   const handleScroll = useCallback(
     ({ target }: Event) => {
