@@ -245,228 +245,219 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     }
   }, [])
 
-  const scrollToBottom = useCallback<ScrollToBottom>(
-    (scrollOptions = {}) => {
-      if (typeof scrollOptions === 'string') {
-        scrollOptions = { animation: scrollOptions }
-      }
+  const scrollToBottom: ScrollToBottom = (scrollOptions = {}) => {
+    if (typeof scrollOptions === 'string') {
+      scrollOptions = { animation: scrollOptions }
+    }
 
-      if (!scrollOptions.preserveScrollPosition) {
-        setIsAtBottom(true)
-      }
+    if (!scrollOptions.preserveScrollPosition) {
+      setIsAtBottom(true)
+    }
 
-      const waitElapsed = Date.now() + (Number(scrollOptions.wait) || 0)
-      const behavior = mergeAnimations(optionsRef.current, scrollOptions.animation)
-      const { ignoreEscapes = false } = scrollOptions
+    const waitElapsed = Date.now() + (Number(scrollOptions.wait) || 0)
+    const behavior = mergeAnimations(optionsRef.current, scrollOptions.animation)
+    const { ignoreEscapes = false } = scrollOptions
 
-      let durationElapsed: number
-      let startTarget = state.calculatedTargetScrollTop
+    let durationElapsed: number
+    let startTarget = state.calculatedTargetScrollTop
 
-      if (scrollOptions.duration instanceof Promise) {
-        scrollOptions.duration.finally(() => {
-          durationElapsed = Date.now()
-        })
-      } else {
-        durationElapsed = waitElapsed + (scrollOptions.duration ?? 0)
-      }
+    if (scrollOptions.duration instanceof Promise) {
+      scrollOptions.duration.finally(() => {
+        durationElapsed = Date.now()
+      })
+    } else {
+      durationElapsed = waitElapsed + (scrollOptions.duration ?? 0)
+    }
 
-      const next = async (): Promise<boolean> => {
-        const promise = new Promise(requestAnimationFrame).then(() => {
-          if (!state.isAtBottom) {
-            state.animation = undefined
-
-            return false
-          }
-
-          const { scrollTop } = state
-          const tick = performance.now()
-          const tickDelta = (tick - (state.lastTick ?? tick)) / SIXTY_FPS_INTERVAL_MS
-          state.animation ||= { behavior, promise, ignoreEscapes }
-
-          if (state.animation.behavior === behavior) {
-            state.lastTick = tick
-          }
-
-          if (isSelecting()) {
-            return next()
-          }
-
-          if (waitElapsed > Date.now()) {
-            return next()
-          }
-
-          if (scrollTop < Math.min(startTarget, state.calculatedTargetScrollTop)) {
-            if (state.animation?.behavior === behavior) {
-              if (behavior === 'instant') {
-                state.scrollTop = state.calculatedTargetScrollTop
-                return next()
-              }
-
-              state.velocity =
-                (behavior.damping * state.velocity + behavior.stiffness * state.scrollDifference) / behavior.mass
-              state.accumulated += state.velocity * tickDelta
-              state.scrollTop += state.accumulated
-
-              if (state.scrollTop !== scrollTop) {
-                state.accumulated = 0
-              }
-            }
-
-            return next()
-          }
-
-          if (durationElapsed > Date.now()) {
-            startTarget = state.calculatedTargetScrollTop
-
-            return next()
-          }
-
+    const next = async (): Promise<boolean> => {
+      const promise = new Promise(requestAnimationFrame).then(() => {
+        if (!state.isAtBottom) {
           state.animation = undefined
 
-          /**
-           * If we're still below the target, then queue
-           * up another scroll to the bottom with the last
-           * requested animatino.
-           */
-          if (state.scrollTop < state.calculatedTargetScrollTop) {
-            return scrollToBottom({
-              animation: mergeAnimations(optionsRef.current, optionsRef.current.resize),
-              ignoreEscapes,
-              duration: Math.max(0, durationElapsed - Date.now()) || undefined,
-            })
+          return false
+        }
+
+        const { scrollTop } = state
+        const tick = performance.now()
+        const tickDelta = (tick - (state.lastTick ?? tick)) / SIXTY_FPS_INTERVAL_MS
+        state.animation ||= { behavior, promise, ignoreEscapes }
+
+        if (state.animation.behavior === behavior) {
+          state.lastTick = tick
+        }
+
+        if (isSelecting()) {
+          return next()
+        }
+
+        if (waitElapsed > Date.now()) {
+          return next()
+        }
+
+        if (scrollTop < Math.min(startTarget, state.calculatedTargetScrollTop)) {
+          if (state.animation?.behavior === behavior) {
+            if (behavior === 'instant') {
+              state.scrollTop = state.calculatedTargetScrollTop
+              return next()
+            }
+
+            state.velocity =
+              (behavior.damping * state.velocity + behavior.stiffness * state.scrollDifference) / behavior.mass
+            state.accumulated += state.velocity * tickDelta
+            state.scrollTop += state.accumulated
+
+            if (state.scrollTop !== scrollTop) {
+              state.accumulated = 0
+            }
           }
 
-          return state.isAtBottom
-        })
+          return next()
+        }
 
-        return promise.then((isAtBottom) => {
-          requestAnimationFrame(() => {
-            if (!state.animation) {
-              state.lastTick = undefined
-              state.velocity = 0
-            }
-          })
+        if (durationElapsed > Date.now()) {
+          startTarget = state.calculatedTargetScrollTop
 
-          return isAtBottom
-        })
-      }
+          return next()
+        }
 
-      if (scrollOptions.wait !== true) {
         state.animation = undefined
-      }
 
-      if (state.animation?.behavior === behavior) {
-        return state.animation.promise
-      }
+        /**
+         * If we're still below the target, then queue
+         * up another scroll to the bottom with the last
+         * requested animatino.
+         */
+        if (state.scrollTop < state.calculatedTargetScrollTop) {
+          return scrollToBottom({
+            animation: mergeAnimations(optionsRef.current, optionsRef.current.resize),
+            ignoreEscapes,
+            duration: Math.max(0, durationElapsed - Date.now()) || undefined,
+          })
+        }
 
-      return next()
-    },
-    [setIsAtBottom, isSelecting, state]
-  )
+        return state.isAtBottom
+      })
+
+      return promise.then((isAtBottom) => {
+        requestAnimationFrame(() => {
+          if (!state.animation) {
+            state.lastTick = undefined
+            state.velocity = 0
+          }
+        })
+
+        return isAtBottom
+      })
+    }
+
+    if (scrollOptions.wait !== true) {
+      state.animation = undefined
+    }
+
+    if (state.animation?.behavior === behavior) {
+      return state.animation.promise
+    }
+
+    return next()
+  }
 
   function stopScroll(): void {
     setEscapedFromLock(true)
     setIsAtBottom(false)
   }
 
-  const handleScroll = useCallback(
-    ({ target }: Event) => {
-      if (target !== scrollRef.current) {
+  function handleScroll({ target }: Event) {
+    if (target !== scrollRef.current) {
+      return
+    }
+
+    const { scrollTop, ignoreScrollToTop } = state
+    let { lastScrollTop = scrollTop } = state
+
+    state.lastScrollTop = scrollTop
+    state.ignoreScrollToTop = undefined
+
+    if (ignoreScrollToTop && ignoreScrollToTop > scrollTop) {
+      /**
+       * When the user scrolls up while the animation plays, the `scrollTop` may
+       * not come in separate events; if this happens, to make sure `isScrollingUp`
+       * is correct, set the lastScrollTop to the ignored event.
+       */
+      lastScrollTop = ignoreScrollToTop
+    }
+
+    setIsNearBottom(state.isNearBottom)
+
+    /**
+     * Scroll events may come before a ResizeObserver event,
+     * so in order to ignore resize events correctly we use a
+     * timeout.
+     *
+     * @see https://github.com/WICG/resize-observer/issues/25#issuecomment-248757228
+     */
+    setTimeout(() => {
+      /**
+       * When theres a resize difference ignore the resize event.
+       */
+      if (state.resizeDifference || scrollTop === ignoreScrollToTop) {
         return
       }
 
-      const { scrollTop, ignoreScrollToTop } = state
-      let { lastScrollTop = scrollTop } = state
-
-      state.lastScrollTop = scrollTop
-      state.ignoreScrollToTop = undefined
-
-      if (ignoreScrollToTop && ignoreScrollToTop > scrollTop) {
-        /**
-         * When the user scrolls up while the animation plays, the `scrollTop` may
-         * not come in separate events; if this happens, to make sure `isScrollingUp`
-         * is correct, set the lastScrollTop to the ignored event.
-         */
-        lastScrollTop = ignoreScrollToTop
+      if (isSelecting()) {
+        setEscapedFromLock(true)
+        setIsAtBottom(false)
+        return
       }
 
-      setIsNearBottom(state.isNearBottom)
+      const isScrollingDown = scrollTop > lastScrollTop
+      const isScrollingUp = scrollTop < lastScrollTop
 
-      /**
-       * Scroll events may come before a ResizeObserver event,
-       * so in order to ignore resize events correctly we use a
-       * timeout.
-       *
-       * @see https://github.com/WICG/resize-observer/issues/25#issuecomment-248757228
-       */
-      setTimeout(() => {
-        /**
-         * When theres a resize difference ignore the resize event.
-         */
-        if (state.resizeDifference || scrollTop === ignoreScrollToTop) {
-          return
-        }
-
-        if (isSelecting()) {
-          setEscapedFromLock(true)
-          setIsAtBottom(false)
-          return
-        }
-
-        const isScrollingDown = scrollTop > lastScrollTop
-        const isScrollingUp = scrollTop < lastScrollTop
-
-        if (state.animation?.ignoreEscapes) {
-          state.scrollTop = lastScrollTop
-          return
-        }
-
-        if (isScrollingUp) {
-          setEscapedFromLock(true)
-          setIsAtBottom(false)
-        }
-
-        if (isScrollingDown) {
-          setEscapedFromLock(false)
-        }
-
-        if (!state.escapedFromLock && state.isNearBottom) {
-          setIsAtBottom(true)
-        }
-      }, 1)
-    },
-    [setEscapedFromLock, setIsAtBottom, isSelecting, state]
-  )
-
-  const handleWheel = useCallback(
-    ({ target, deltaY }: WheelEvent) => {
-      let element = target as HTMLElement
-
-      while (!['scroll', 'auto'].includes(getComputedStyle(element).overflow)) {
-        if (!element.parentElement) {
-          return
-        }
-
-        element = element.parentElement
+      if (state.animation?.ignoreEscapes) {
+        state.scrollTop = lastScrollTop
+        return
       }
 
-      /**
-       * The browser may cancel the scrolling from the mouse wheel
-       * if we update it from the animation in meantime.
-       * To prevent this, always escape when the wheel is scrolled up.
-       */
-      if (
-        element === scrollRef.current &&
-        deltaY < 0 &&
-        scrollRef.current.scrollHeight > scrollRef.current.clientHeight &&
-        !state.animation?.ignoreEscapes
-      ) {
+      if (isScrollingUp) {
         setEscapedFromLock(true)
         setIsAtBottom(false)
       }
-    },
-    [setEscapedFromLock, setIsAtBottom, state]
-  )
+
+      if (isScrollingDown) {
+        setEscapedFromLock(false)
+      }
+
+      if (!state.escapedFromLock && state.isNearBottom) {
+        setIsAtBottom(true)
+      }
+    }, 1)
+  }
+
+  function handleWheel({ target, deltaY }: WheelEvent) {
+    let element = target as HTMLElement
+
+    while (!['scroll', 'auto'].includes(getComputedStyle(element).overflow)) {
+      if (!element.parentElement) {
+        return
+      }
+
+      element = element.parentElement
+    }
+
+    /**
+     * The browser may cancel the scrolling from the mouse wheel
+     * if we update it from the animation in meantime.
+     * To prevent this, always escape when the wheel is scrolled up.
+     */
+    if (
+      element === scrollRef.current &&
+      deltaY < 0 &&
+      scrollRef.current.scrollHeight > scrollRef.current.clientHeight &&
+      !state.animation?.ignoreEscapes
+    ) {
+      setEscapedFromLock(true)
+      setIsAtBottom(false)
+    }
+  }
 
   const scrollRef = useRefCallback((scroll) => {
     scrollRef.current?.removeEventListener('scroll', handleScroll)
