@@ -3,15 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-  type DependencyList,
-  type MutableRefObject,
-  type RefCallback,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { type DependencyList, type MutableRefObject, type RefCallback, useCallback, useMemo, useRef } from 'react'
 
 export interface StickToBottomState {
   scrollTop: number
@@ -141,9 +133,9 @@ globalThis.document?.addEventListener('click', () => {
 })
 
 export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBottomInstance => {
-  const [escapedFromLock, updateEscapedFromLock] = useState(false)
-  const [isAtBottom, updateIsAtBottom] = useState(options.initial !== false)
-  const [isNearBottom, setIsNearBottom] = useState(false)
+  let escapedFromLock = $state(false)
+  let isAtBottom = $state(options.initial !== false)
+  let isNearBottom = $state(false)
 
   const optionsRef = useRef<StickToBottomOptions>(null!)
   optionsRef.current = options
@@ -165,15 +157,19 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     )
   }, [])
 
-  const setIsAtBottom = useCallback((isAtBottom: boolean) => {
-    state.isAtBottom = isAtBottom
-    updateIsAtBottom(isAtBottom)
+  const setIsAtBottom = useCallback((newIsAtBottom: boolean) => {
+    state.isAtBottom = newIsAtBottom
+    isAtBottom = newIsAtBottom
   }, [])
 
-  const setEscapedFromLock = useCallback((escapedFromLock: boolean) => {
-    state.escapedFromLock = escapedFromLock
-    updateEscapedFromLock(escapedFromLock)
+  const setEscapedFromLock = useCallback((newEscapedFromLock: boolean) => {
+    state.escapedFromLock = newEscapedFromLock
+    escapedFromLock = newEscapedFromLock
   }, [])
+
+  const setIsNearBottom = (newIsNearBottom: boolean) => {
+    isNearBottom = newIsNearBottom
+  }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: not needed
   const state = useMemo<StickToBottomState>(() => {
