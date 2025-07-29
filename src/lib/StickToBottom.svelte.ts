@@ -171,79 +171,95 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     isNearBottom = newIsNearBottom
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: not needed
-  const state = useMemo<StickToBottomState>(() => {
-    let lastCalculation: { targetScrollTop: number; calculatedScrollTop: number } | undefined
+  let lastCalculation: { targetScrollTop: number; calculatedScrollTop: number } | undefined
 
-    return {
-      escapedFromLock,
-      isAtBottom,
-      resizeDifference: 0,
-      accumulated: 0,
-      velocity: 0,
-      listeners: new Set(),
+  const state: StickToBottomState = {
+    get escapedFromLock() {
+      return escapedFromLock
+    },
+    set escapedFromLock(value: boolean) {
+      escapedFromLock = value
+    },
 
-      get scrollTop() {
-        return scrollRef.current?.scrollTop ?? 0
-      },
-      set scrollTop(scrollTop: number) {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollTop
-          state.ignoreScrollToTop = scrollRef.current.scrollTop
-        }
-      },
+    get isAtBottom() {
+      return isAtBottom
+    },
+    set isAtBottom(value: boolean) {
+      isAtBottom = value
+    },
 
-      get targetScrollTop() {
-        if (!scrollRef.current || !contentRef.current) {
-          return 0
-        }
+    get isNearBottom() {
+      return this.scrollDifference <= STICK_TO_BOTTOM_OFFSET_PX
+    },
+    set isNearBottom(value: boolean) {
+      isNearBottom = value
+    },
 
-        return scrollRef.current.scrollHeight - 1 - scrollRef.current.clientHeight
-      },
-      get calculatedTargetScrollTop() {
-        if (!scrollRef.current || !contentRef.current) {
-          return 0
-        }
+    resizeDifference: 0,
+    accumulated: 0,
+    velocity: 0,
+    lastScrollTop: undefined,
+    ignoreScrollToTop: undefined,
+    animation: undefined,
+    lastTick: undefined,
+    resizeObserver: undefined,
 
-        const { targetScrollTop } = this
+    get scrollTop() {
+      return scrollRef.current?.scrollTop ?? 0
+    },
+    set scrollTop(scrollTop: number) {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollTop
+        state.ignoreScrollToTop = scrollRef.current.scrollTop
+      }
+    },
 
-        if (!options.targetScrollTop) {
-          return targetScrollTop
-        }
+    get targetScrollTop() {
+      if (!scrollRef.current || !contentRef.current) {
+        return 0
+      }
 
-        if (lastCalculation?.targetScrollTop === targetScrollTop) {
-          return lastCalculation.calculatedScrollTop
-        }
+      return scrollRef.current.scrollHeight - 1 - scrollRef.current.clientHeight
+    },
+    get calculatedTargetScrollTop() {
+      if (!scrollRef.current || !contentRef.current) {
+        return 0
+      }
 
-        const calculatedScrollTop = Math.max(
-          Math.min(
-            options.targetScrollTop(targetScrollTop, {
-              scrollElement: scrollRef.current,
-              contentElement: contentRef.current,
-            }),
-            targetScrollTop
-          ),
-          0
-        )
+      const { targetScrollTop } = this
 
-        lastCalculation = { targetScrollTop, calculatedScrollTop }
+      if (!options.targetScrollTop) {
+        return targetScrollTop
+      }
 
-        requestAnimationFrame(() => {
-          lastCalculation = undefined
-        })
+      if (lastCalculation?.targetScrollTop === targetScrollTop) {
+        return lastCalculation.calculatedScrollTop
+      }
 
-        return calculatedScrollTop
-      },
+      const calculatedScrollTop = Math.max(
+        Math.min(
+          options.targetScrollTop(targetScrollTop, {
+            scrollElement: scrollRef.current,
+            contentElement: contentRef.current,
+          }),
+          targetScrollTop
+        ),
+        0
+      )
 
-      get scrollDifference() {
-        return this.calculatedTargetScrollTop - this.scrollTop
-      },
+      lastCalculation = { targetScrollTop, calculatedScrollTop }
 
-      get isNearBottom() {
-        return this.scrollDifference <= STICK_TO_BOTTOM_OFFSET_PX
-      },
-    }
-  }, [])
+      requestAnimationFrame(() => {
+        lastCalculation = undefined
+      })
+
+      return calculatedScrollTop
+    },
+
+    get scrollDifference() {
+      return this.calculatedTargetScrollTop - this.scrollTop
+    },
+  }
 
   const scrollToBottom: ScrollToBottom = (scrollOptions = {}) => {
     if (typeof scrollOptions === 'string') {
