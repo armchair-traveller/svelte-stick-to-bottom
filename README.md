@@ -4,7 +4,10 @@
 
 [![npm version](https://img.shields.io/npm/v/svelte-stick-to-bottom.svg?style=flat-square)](https://www.npmjs.com/package/svelte-stick-to-bottom)
 [![npm downloads](https://img.shields.io/npm/dm/svelte-stick-to-bottom.svg?style=flat-square)](https://www.npmjs.com/package/svelte-stick-to-bottom)
+
+<!-- TODO:
 [![Demo](https://img.shields.io/badge/StackBlitz-Demo-blue.svg?style=flat-square)](https://stackblitz.com/~/github.com/samdenty/svelte-stick-to-bottom?file=demo/Demo.svelte)
+-->
 
 A lightweight **zero-dependency** Svelte 5 rune + Component that automatically sticks to the bottom of container and smoothly animates the content to keep it's visual position on screen whilst new content is being added.
 
