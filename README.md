@@ -109,3 +109,4 @@ const { isAtBottom } = $derived(useStickToBottom())
 - While this could be based off of an extended agnostic vanilla JS approach, that's something for upstream to consider. For now, this keeps as close to the original React API as possible, while leveraging Svelte's modern, simple reactive paradigms if it doesn't introduce more complexity.
   - Also time constraints for personal use.
   - Another way is to allow passing options to `scrollable` by turning it into an attachment factory.
+- Last upstream sync: v1.1.1

@@ -3,6 +3,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Attachment } from 'svelte/attachments'
+import { on } from 'svelte/events'
 
 export interface StickToBottomState {
   scrollTop: number
@@ -119,17 +120,19 @@ const RETAIN_ANIMATION_DURATION_MS = 350
 
 let mouseDown = false
 
-globalThis.document?.addEventListener('mousedown', () => {
-  mouseDown = true
-})
+if (globalThis.document) {
+  on(globalThis.document, 'mousedown', () => {
+    mouseDown = true
+  })
 
-globalThis.document?.addEventListener('mouseup', () => {
-  mouseDown = false
-})
+  on(globalThis.document, 'mouseup', () => {
+    mouseDown = false
+  })
 
-globalThis.document?.addEventListener('click', () => {
-  mouseDown = false
-})
+  on(globalThis.document, 'click', () => {
+    mouseDown = false
+  })
+}
 
 export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBottomInstance => {
   let escapedFromLock = $state(false)
@@ -460,13 +463,13 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
 
   const scrollable: Attachment<HTMLElement> = (element) => {
     scrollElement = element
-    element.addEventListener('scroll', handleScroll, { passive: true })
-    element.addEventListener('wheel', handleWheel, { passive: true })
+    const offScroll = on(element, 'scroll', handleScroll, { passive: true })
+    const offWheel = on(element, 'wheel', handleWheel, { passive: true })
 
     return () => {
       scrollElement = null
-      element.removeEventListener('scroll', handleScroll)
-      element.removeEventListener('wheel', handleWheel)
+      offScroll()
+      offWheel()
     }
   }
 
