@@ -22,7 +22,7 @@ A lightweight **zero-dependency** Svelte 5 rune + Component that automatically s
   - Clever logic distinguishes the user scrolling from the custom animation scroll events (without doing any debouncing which could cause some events to be missed).
   - Mobile devices work well with this logic too.
 - Uses a custom implemented smooth scrolling algorithm, featuring velocity-based spring animations (with configurable parameters).
-  - Other libraries use easing functions with durations instead, but these doesn't work well when you want to stream in new content with variable sizing - which is common for AI chatbot use cases.
+  - Other libraries use easing functions with durations instead, but these don't work well when you want to stream in new content with variable sizing - which is common for AI chatbot use cases.
   - `scrollToBottom` returns a `Promise<boolean>` which will resolve to `true` as soon as the scroll was successful, or `false` if the scroll was cancelled.
 
 # Usage
@@ -31,9 +31,9 @@ A lightweight **zero-dependency** Svelte 5 rune + Component that automatically s
 
 ```svelte
 <script>
-  import { StickToBottom, getStickToBottomContext } from 'svelte-stick-to-bottom';
+import { StickToBottom, getStickToBottomContext } from 'svelte-stick-to-bottom';
 
-  let { messages } = $props();
+let { messages } = $props();
 </script>
 
 <StickToBottom class="h-[50vh] relative" resize="smooth" initial="smooth">
@@ -53,9 +53,9 @@ A lightweight **zero-dependency** Svelte 5 rune + Component that automatically s
 ```svelte
 <!-- ScrollToBottom.svelte -->
 <script>
-  import { getStickToBottomContext } from 'svelte-stick-to-bottom';
+import { getStickToBottomContext } from 'svelte-stick-to-bottom';
 
-  const { isAtBottom, scrollToBottom } = getStickToBottomContext();
+const { isAtBottom, scrollToBottom } = getStickToBottomContext();
 </script>
 
 {#if !$isAtBottom}
@@ -68,25 +68,17 @@ A lightweight **zero-dependency** Svelte 5 rune + Component that automatically s
 {/if}
 ```
 
-## `stickToBottom` Rune
+## `useStickToBottom` Rune
 
 ```svelte
 <script>
-  import { stickToBottom } from 'svelte-stick-to-bottom';
+import { useStickToBottom } from 'svelte-stick-to-bottom';
 
-  let { messages } = $props();
-
-  let scrollElement = $state();
-  let contentElement = $state();
-
-  const { isAtBottom, scrollToBottom } = stickToBottom(() => ({
-    scrollRef: scrollElement,
-    contentRef: contentElement
-  }));
+const { scrollable, content } = useStickToBottom();
 </script>
 
-<div style="overflow: auto" bind:this={scrollElement}>
-  <div bind:this={contentElement}>
+<div style="overflow: auto" {@attach scrollable}>
+  <div {@attach content}>
     {#each messages as message (message.id)}
       <Message {message} />
     {/each}
@@ -94,10 +86,27 @@ A lightweight **zero-dependency** Svelte 5 rune + Component that automatically s
 </div>
 ```
 
+Optionally, destructure reactive state:
+
+```svelte
+<script>
+const { isAtBottom } = $derived(useStickToBottom());
+</script>
+```
+
 ## Key Differences from React Version
 
-- **Runes instead of Hooks**: Uses Svelte 5's rune system (`$state`, `$derived`, `$effect`) instead of React hooks
+- **Runes instead of Hooks**: `$state`, `$derived`, instead of React hooks for reactive state management.
+- **Attachments**: `{@attach}` directive for element bindings instead of `useRef()`
 - **Context API**: Uses Svelte's context system with `getStickToBottomContext()` instead of `useStickToBottomContext()`
-- **Element Bindings**: Uses `bind:this` for element references instead of `useRef()`
-- **Reactive Values**: Returns runes that can be accessed with `$` syntax for reactivity
-- **Props Syntax**: Uses Svelte 5's new `$props()` syntax instead of component props destructuring
+- **Props Syntax**: `$props()` instead of component props destructuring
+
+## Tradeoffs:
+
+- Svelte doesn't rerun useStickToBottom on every render, so if you're expecting your options passed in to change, mutate the options object you pass in.
+  - Can be modified to accept a callback `() => options`, but that would deviate from the original React API so do open an issue if you have a use case.
+
+## Footnotes
+
+- While this could be based off of an extended agnostic vanilla JS approach, that's something for upstream to consider. For now, this keeps as close to the original React API as possible, while leveraging Svelte's modern, simple reactive paradigms if it doesn't introduce more complexity.
+  - Also time constraints for personal use.
