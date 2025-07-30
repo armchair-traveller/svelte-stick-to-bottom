@@ -4,6 +4,7 @@ export interface StickToBottomProps extends Omit<HTMLAttributes<HTMLDivElement>,
   instance?: StickToBottomInstance
   children?: Snippet<[StickToBottomContext]>
 }
+export const STICK_TO_BOTTOM_CONTEXT = Symbol('stick-to-bottom')
 </script>
 
 <script lang="ts">
@@ -13,7 +14,6 @@ import type { StickToBottomInstance, StickToBottomOptions, GetTargetScrollTop } 
 import type { Snippet } from 'svelte'
 import { setContext } from 'svelte'
 import { useStickToBottom } from '$lib/useStickToBottom.svelte.js'
-import { STICK_TO_BOTTOM_CONTEXT } from './index.js'
 
 let {
   instance,

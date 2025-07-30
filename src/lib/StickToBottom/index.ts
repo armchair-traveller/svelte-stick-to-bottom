@@ -2,10 +2,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { setContext, getContext, onMount } from 'svelte'
-import type { Component, Snippet } from 'svelte'
+import { getContext } from 'svelte'
 import type { Attachment } from 'svelte/attachments'
-import type { HTMLAttributes } from 'svelte/elements'
+import _StickToBottom, { STICK_TO_BOTTOM_CONTEXT } from './stick-to-bottom.svelte'
 import {
   type GetTargetScrollTop,
   type ScrollToBottom,
@@ -26,13 +25,11 @@ export interface StickToBottomContext {
   state: StickToBottomState
 }
 
-const STICK_TO_BOTTOM_CONTEXT = Symbol('stick-to-bottom')
-
-export { STICK_TO_BOTTOM_CONTEXT }
+export type { StickToBottomProps } from './stick-to-bottom.svelte'
+export const StickToBottom = Object.assign(_StickToBottom, { Content: _Content })
 
 export namespace StickToBottom {
   export type ContentProps = _ContentProps
-  export const Content = _Content
 }
 
 /**
