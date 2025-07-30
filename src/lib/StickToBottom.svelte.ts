@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type DependencyList, type MutableRefObject, type RefCallback } from 'react'
+import type { Attachment } from 'svelte/attachments'
 
 export interface StickToBottomState {
   scrollTop: number
@@ -142,6 +142,8 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
   let escapedFromLock = $state(false)
   let isAtBottom = $state(options.initial !== false)
   let isNearBottom = $state(false)
+  let scrollElement: HTMLElement | null = null
+  let contentElement: HTMLElement | null = null
 
   function isSelecting() {
     if (!mouseDown) {
@@ -155,19 +157,13 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
 
     const range = selection.getRangeAt(0)
     return (
-      range.commonAncestorContainer.contains(scrollRef.current) ||
-      scrollRef.current?.contains(range.commonAncestorContainer)
+      range.commonAncestorContainer.contains(scrollElement) || scrollElement?.contains(range.commonAncestorContainer)
     )
   }
 
   function setIsAtBottom(newIsAtBottom: boolean) {
     state.isAtBottom = newIsAtBottom
     isAtBottom = newIsAtBottom
-  }
-
-  function setEscapedFromLock(newEscapedFromLock: boolean) {
-    state.escapedFromLock = newEscapedFromLock
-    escapedFromLock = newEscapedFromLock
   }
 
   const setIsNearBottom = (newIsNearBottom: boolean) => {
@@ -208,24 +204,24 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     resizeObserver: undefined,
 
     get scrollTop() {
-      return scrollRef.current?.scrollTop ?? 0
+      return scrollElement?.scrollTop ?? 0
     },
     set scrollTop(scrollTop: number) {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollTop
-        state.ignoreScrollToTop = scrollRef.current.scrollTop
+      if (scrollElement) {
+        scrollElement.scrollTop = scrollTop
+        state.ignoreScrollToTop = scrollElement.scrollTop
       }
     },
 
     get targetScrollTop() {
-      if (!scrollRef.current || !contentRef.current) {
+      if (!scrollElement || !contentElement) {
         return 0
       }
 
-      return scrollRef.current.scrollHeight - 1 - scrollRef.current.clientHeight
+      return scrollElement.scrollHeight - 1 - scrollElement.clientHeight
     },
     get calculatedTargetScrollTop() {
-      if (!scrollRef.current || !contentRef.current) {
+      if (!scrollElement || !contentElement) {
         return 0
       }
 
@@ -242,8 +238,8 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       const calculatedScrollTop = Math.max(
         Math.min(
           options.targetScrollTop(targetScrollTop, {
-            scrollElement: scrollRef.current,
-            contentElement: contentRef.current,
+            scrollElement: scrollElement,
+            contentElement: contentElement,
           }),
           targetScrollTop
         ),
@@ -381,12 +377,12 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
   }
 
   function stopScroll(): void {
-    setEscapedFromLock(true)
+    escapedFromLock = true
     setIsAtBottom(false)
   }
 
   function handleScroll({ target }: Event) {
-    if (target !== scrollRef.current) {
+    if (target !== scrollElement) {
       return
     }
 
@@ -423,7 +419,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       }
 
       if (isSelecting()) {
-        setEscapedFromLock(true)
+        escapedFromLock = true
         setIsAtBottom(false)
         return
       }
@@ -437,12 +433,12 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       }
 
       if (isScrollingUp) {
-        setEscapedFromLock(true)
+        escapedFromLock = true
         setIsAtBottom(false)
       }
 
       if (isScrollingDown) {
-        setEscapedFromLock(false)
+        escapedFromLock = false
       }
 
       if (!state.escapedFromLock && state.isNearBottom) {
@@ -468,32 +464,32 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
      * To prevent this, always escape when the wheel is scrolled up.
      */
     if (
-      element === scrollRef.current &&
+      element === scrollElement &&
       deltaY < 0 &&
-      scrollRef.current.scrollHeight > scrollRef.current.clientHeight &&
+      scrollElement.scrollHeight > scrollElement.clientHeight &&
       !state.animation?.ignoreEscapes
     ) {
-      setEscapedFromLock(true)
+      escapedFromLock = true
       setIsAtBottom(false)
     }
   }
 
-  const scrollRef = useRefCallback((scroll) => {
-    scrollRef.current?.removeEventListener('scroll', handleScroll)
-    scrollRef.current?.removeEventListener('wheel', handleWheel)
-    scroll?.addEventListener('scroll', handleScroll, { passive: true })
-    scroll?.addEventListener('wheel', handleWheel, { passive: true })
-  }, [])
+  const scrollable: Attachment<HTMLElement> = (element) => {
+    scrollElement = element
+    element.addEventListener('scroll', handleScroll, { passive: true })
+    element.addEventListener('wheel', handleWheel, { passive: true })
 
-  const contentRef = useRefCallback((content) => {
-    state.resizeObserver?.disconnect()
-
-    if (!content) {
-      return
+    return () => {
+      scrollElement = null
+      element.removeEventListener('scroll', handleScroll)
+      element.removeEventListener('wheel', handleWheel)
     }
+  }
+
+  const content: Attachment<HTMLElement> = (element) => {
+    contentElement = element
 
     let previousHeight: number | undefined
-
     state.resizeObserver = new ResizeObserver(([entry]) => {
       const { height } = entry.contentRect
       const difference = height - (previousHeight ?? height)
@@ -530,7 +526,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
          * could have caused the container to be at the bottom.
          */
         if (state.isNearBottom) {
-          setEscapedFromLock(false)
+          escapedFromLock = false
           setIsAtBottom(true)
         }
       }
@@ -553,40 +549,42 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       })
     })
 
-    state.resizeObserver?.observe(content)
-  }, [])
+    state.resizeObserver.observe(element)
+
+    return () => {
+      contentElement = null
+      state.resizeObserver?.disconnect()
+      state.resizeObserver = undefined
+    }
+  }
 
   return {
-    contentRef,
-    scrollRef,
+    content,
+    scrollable,
     scrollToBottom,
     stopScroll,
-    isAtBottom: isAtBottom || isNearBottom,
-    isNearBottom,
-    escapedFromLock,
+    get isAtBottom() {
+      return isAtBottom || isNearBottom
+    },
+    get isNearBottom() {
+      return isNearBottom
+    },
+    get escapedFromLock() {
+      return escapedFromLock
+    },
     state,
   }
 }
 
 export interface StickToBottomInstance {
-  contentRef: React.MutableRefObject<HTMLElement | null> & React.RefCallback<HTMLElement>
-  scrollRef: React.MutableRefObject<HTMLElement | null> & React.RefCallback<HTMLElement>
+  content: Attachment<HTMLElement>
+  scrollable: Attachment<HTMLElement>
   scrollToBottom: ScrollToBottom
   stopScroll: StopScroll
   isAtBottom: boolean
   isNearBottom: boolean
   escapedFromLock: boolean
   state: StickToBottomState
-}
-
-function useRefCallback<T extends (ref: HTMLElement | null) => any>(callback: T, deps: DependencyList) {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: not needed
-  const result = ((ref: HTMLElement | null) => {
-    result.current = ref
-    return callback(ref)
-  }) as any as MutableRefObject<HTMLElement | null> & RefCallback<HTMLElement>
-
-  return result
 }
 
 const animationCache = new Map<string, Readonly<Required<SpringAnimation>>>()
