@@ -161,15 +161,6 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     )
   }
 
-  function setIsAtBottom(newIsAtBottom: boolean) {
-    state.isAtBottom = newIsAtBottom
-    isAtBottom = newIsAtBottom
-  }
-
-  const setIsNearBottom = (newIsNearBottom: boolean) => {
-    isNearBottom = newIsNearBottom
-  }
-
   let lastCalculation: { targetScrollTop: number; calculatedScrollTop: number } | undefined
 
   const state: StickToBottomState = {
@@ -266,7 +257,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
     }
 
     if (!scrollOptions.preserveScrollPosition) {
-      setIsAtBottom(true)
+      isAtBottom = true
     }
 
     const waitElapsed = Date.now() + (Number(scrollOptions.wait) || 0)
@@ -378,7 +369,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
 
   function stopScroll(): void {
     escapedFromLock = true
-    setIsAtBottom(false)
+    isAtBottom = false
   }
 
   function handleScroll({ target }: Event) {
@@ -401,7 +392,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       lastScrollTop = ignoreScrollToTop
     }
 
-    setIsNearBottom(state.isNearBottom)
+    isNearBottom = state.isNearBottom
 
     /**
      * Scroll events may come before a ResizeObserver event,
@@ -420,7 +411,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
 
       if (isSelecting()) {
         escapedFromLock = true
-        setIsAtBottom(false)
+        isAtBottom = false
         return
       }
 
@@ -434,7 +425,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
 
       if (isScrollingUp) {
         escapedFromLock = true
-        setIsAtBottom(false)
+        isAtBottom = false
       }
 
       if (isScrollingDown) {
@@ -442,7 +433,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       }
 
       if (!state.escapedFromLock && state.isNearBottom) {
-        setIsAtBottom(true)
+        isAtBottom = true
       }
     }, 1)
   }
@@ -470,7 +461,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
       !state.animation?.ignoreEscapes
     ) {
       escapedFromLock = true
-      setIsAtBottom(false)
+      isAtBottom = false
     }
   }
 
@@ -504,7 +495,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
         state.scrollTop = state.targetScrollTop
       }
 
-      setIsNearBottom(state.isNearBottom)
+      isNearBottom = state.isNearBottom
 
       if (difference >= 0) {
         /**
@@ -527,7 +518,7 @@ export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBot
          */
         if (state.isNearBottom) {
           escapedFromLock = false
-          setIsAtBottom(true)
+          isAtBottom = true
         }
       }
 
