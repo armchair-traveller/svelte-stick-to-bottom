@@ -101,8 +101,9 @@ const { isAtBottom } = $derived(useStickToBottom())
 
 ## Tradeoffs:
 
-- Svelte doesn't rerun useStickToBottom on every render, so if you're expecting your options passed in to change, mutate the options object you pass in.
-  - Can be modified to accept a callback `() => options`, but that would deviate from the original React API so do open an issue if you have a use case.
+- If you're expecting your options passed in to change, either mutate the options obj or have $derived rerun the function. Not specific to this library, just how runes work.
+  - For the component version, this doesn't matter as props are automatically $derived. Trivia: While the function will rerun on every prop change of `<StickToBottom>`, this shouldn't be perf intensive and won't affect you if you only pass in an initial set of props.
+  - Can be modified to accept a callback `() => options`, but that would deviate from the original React API so do open an issue if you have a use case. <!-- Wouldn't be hard to implement with a simple Proxy to wrap it. -->
 
 ## Footnotes
 
