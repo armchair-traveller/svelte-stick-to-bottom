@@ -132,12 +132,6 @@ globalThis.document?.addEventListener('click', () => {
   mouseDown = false
 })
 
-// TODO: In Svelte, the options parameter needs special consideration for updates. Some ways:
-// Either the options must be passed reactively from an attachment call site, or documentation
-// should clarify that options cannot be reassigned and must be mutated in place,
-// otherwise the function will lose reference to updated options.
-// Or accept a function that returns options, which can be called to get the latest options.
-// Options is basically initial options. Inform of requiring mutation.
 export const useStickToBottom = (options: StickToBottomOptions = {}): StickToBottomInstance => {
   let escapedFromLock = $state(false)
   let isAtBottom = $state(options.initial !== false)
