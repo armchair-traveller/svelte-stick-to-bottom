@@ -88,10 +88,8 @@ const { scrollable, content } = useStickToBottom();
 
 Optionally, destructure reactive state:
 
-```svelte
-<script>
-const { isAtBottom } = $derived(useStickToBottom());
-</script>
+```js
+const { isAtBottom } = $derived(useStickToBottom())
 ```
 
 ## Key Differences from React Version
