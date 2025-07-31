@@ -47,42 +47,39 @@ const defaultInstance = $derived(
   })
 )
 
-function getContext() {
-  const {
-    scrollable,
-    content,
-    scrollToBottom,
-    stopScroll,
-    isAtBottom,
-    escapedFromLock,
-    state: stickToBottomState,
-  } = $derived(instance ?? defaultInstance)
-  return {
-    scrollable,
-    content,
-    scrollToBottom,
-    stopScroll,
-    get isAtBottom() {
-      return isAtBottom
-    },
-    get escapedFromLock() {
-      return escapedFromLock
-    },
-    get state() {
-      return stickToBottomState
-    },
-    get targetScrollTop() {
-      return customTargetScrollTop
-    },
-    set targetScrollTop(targetScrollTop: GetTargetScrollTop | null) {
-      customTargetScrollTop = targetScrollTop
-    },
-  }
+const {
+  scrollable,
+  content,
+  scrollToBottom,
+  stopScroll,
+  isAtBottom,
+  escapedFromLock,
+  state: stickToBottomState,
+} = $derived(instance ?? defaultInstance)
+
+context = {
+  scrollable,
+  content,
+  scrollToBottom,
+  stopScroll,
+  get isAtBottom() {
+    return isAtBottom
+  },
+  get escapedFromLock() {
+    return escapedFromLock
+  },
+  get state() {
+    return stickToBottomState
+  },
+  get targetScrollTop() {
+    return customTargetScrollTop
+  },
+  set targetScrollTop(targetScrollTop: GetTargetScrollTop | null) {
+    customTargetScrollTop = targetScrollTop
+  },
 }
 
-context = getContext()
-
-setContext(STICK_TO_BOTTOM_CONTEXT, getContext())
+setContext(STICK_TO_BOTTOM_CONTEXT, context)
 </script>
 
-<div {...props}>{@render children?.(getContext())}</div>
+<div {...props}>{@render children?.(context)}</div>
