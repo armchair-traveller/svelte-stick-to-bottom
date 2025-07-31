@@ -31,7 +31,7 @@ A lightweight **zero-dependency** Svelte 5 rune + Component that automatically s
 
 ```svelte
 <script>
-import { StickToBottom, getStickToBottomContext } from 'svelte-stick-to-bottom';
+import { StickToBottom, useStickToBottomContext } from 'svelte-stick-to-bottom';
 
 let { messages } = $props();
 </script>
@@ -45,7 +45,7 @@ let { messages } = $props();
 
   <ScrollToBottom />
 
-  <!-- This component uses `getStickToBottomContext` to scroll to bottom when the user enters a message -->
+  <!-- This component uses `useStickToBottomContext` to scroll to bottom when the user enters a message -->
   <ChatBox />
 </StickToBottom>
 ```
