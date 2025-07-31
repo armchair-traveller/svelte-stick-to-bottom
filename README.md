@@ -104,10 +104,10 @@ const { isAtBottom } = $derived(useStickToBottom())
 - If you're expecting your options passed in to change, either mutate the options obj or have $derived rerun the function. Not specific to this library, just how runes work.
   - For the component version, this doesn't matter as props are automatically $derived. Trivia: While the function will rerun on every prop change of `<StickToBottom>`, this shouldn't be perf intensive and won't affect you if you only pass in an initial set of props.
   - Can be modified to accept a callback `() => options`, but that would deviate from the original React API so do open an issue if you have a use case. <!-- Wouldn't be hard to implement with a simple Proxy to wrap it. -->
+    - Another way is to allow passing options to `scrollable` by turning it into an attachment factory.
 
 ## Footnotes
 
 - While this could be based off of an extended agnostic vanilla JS approach, that's something for upstream to consider. For now, this keeps as close to the original React API as possible, while leveraging Svelte's modern, simple reactive paradigms if it doesn't introduce more complexity.
   - Also time constraints for personal use.
-  - Another way is to allow passing options to `scrollable` by turning it into an attachment factory.
 - Last upstream sync: v1.1.1
