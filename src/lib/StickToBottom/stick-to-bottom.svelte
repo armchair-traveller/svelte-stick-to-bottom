@@ -7,7 +7,6 @@ export interface StickToBottomProps extends Omit<HTMLAttributes<HTMLDivElement>,
 export const STICK_TO_BOTTOM_CONTEXT = Symbol('stick-to-bottom')
 </script>
 
-<!-- svelte-ignore state_referenced_locally -->
 <script lang="ts">
 import type { GetTargetScrollTop, StickToBottomInstance, StickToBottomOptions } from '$lib/useStickToBottom.svelte.js'
 import { useStickToBottom } from '$lib/useStickToBottom.svelte.js'
@@ -57,10 +56,18 @@ const {
 } = $derived(instance ?? defaultInstance)
 
 context = {
-  scrollable,
-  content,
-  scrollToBottom,
-  stopScroll,
+  get scrollable() {
+    return scrollable
+  },
+  get content() {
+    return content
+  },
+  get scrollToBottom() {
+    return scrollToBottom
+  },
+  get stopScroll() {
+    return stopScroll
+  },
   get isAtBottom() {
     return isAtBottom
   },
