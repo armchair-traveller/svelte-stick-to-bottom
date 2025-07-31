@@ -58,10 +58,10 @@ import { getStickToBottomContext } from 'svelte-stick-to-bottom';
 const { isAtBottom, scrollToBottom } = getStickToBottomContext();
 </script>
 
-{#if !$isAtBottom}
+{#if !isAtBottom}
   <button
     class="absolute i-ph-arrow-circle-down-fill text-4xl rounded-lg left-[50%] translate-x-[-50%] bottom-0"
-    onclick={() => scrollToBottom()}
+    onclick={scrollToBottom}
   >
     Scroll to bottom
   </button>
