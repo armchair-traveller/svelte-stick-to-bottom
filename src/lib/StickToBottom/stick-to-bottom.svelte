@@ -7,9 +7,10 @@ export interface StickToBottomProps extends Omit<HTMLAttributes<HTMLDivElement>,
 export const STICK_TO_BOTTOM_CONTEXT = Symbol('stick-to-bottom')
 </script>
 
+<!-- svelte-ignore state_referenced_locally -->
 <script lang="ts">
 import type { HTMLAttributes } from 'svelte/elements'
-import type { StickToBottomContext } from './index.js'
+import { type StickToBottomContext } from './index.js'
 import type { StickToBottomInstance, StickToBottomOptions, GetTargetScrollTop } from '$lib/useStickToBottom.svelte.js'
 import type { Snippet } from 'svelte'
 import { setContext } from 'svelte'
@@ -46,38 +47,42 @@ const defaultInstance = $derived(
   })
 )
 
-const {
-  scrollable,
-  content,
-  scrollToBottom,
-  stopScroll,
-  isAtBottom,
-  escapedFromLock,
-  state: stickToBottomState,
-} = $derived(instance ?? defaultInstance)
+function getContext() {
+  const {
+    scrollable,
+    content,
+    scrollToBottom,
+    stopScroll,
+    isAtBottom,
+    escapedFromLock,
+    state: stickToBottomState,
+  } = $derived(instance ?? defaultInstance)
+  return {
+    scrollable,
+    content,
+    scrollToBottom,
+    stopScroll,
+    get isAtBottom() {
+      return isAtBottom
+    },
+    get escapedFromLock() {
+      return escapedFromLock
+    },
+    get state() {
+      return stickToBottomState
+    },
+    get targetScrollTop() {
+      return customTargetScrollTop
+    },
+    set targetScrollTop(targetScrollTop: GetTargetScrollTop | null) {
+      customTargetScrollTop = targetScrollTop
+    },
+  }
+}
 
-const derivedContext = $derived({
-  scrollToBottom,
-  stopScroll,
-  scrollable,
-  isAtBottom,
-  escapedFromLock,
-  content,
-  state: stickToBottomState,
-  get targetScrollTop() {
-    return customTargetScrollTop
-  },
-  set targetScrollTop(targetScrollTop: GetTargetScrollTop | null) {
-    customTargetScrollTop = targetScrollTop
-  },
-})
+context = getContext()
 
-// TODO: Same issue as below, needs checking if it receives updates, For example, check if isAtBottom changes
-context = (() => derivedContext)()
-
-// TODO: unsure if this is the right way to handle context updates, either use getters, or a proxy
-// find a way to test it
-setContext(STICK_TO_BOTTOM_CONTEXT, (() => derivedContext)())
+setContext(STICK_TO_BOTTOM_CONTEXT, getContext())
 </script>
 
-<div {...props}>{@render children?.(derivedContext)}</div>
+<div {...props}>{@render children?.(getContext())}</div>
