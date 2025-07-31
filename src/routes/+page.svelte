@@ -3,15 +3,10 @@ import { StickToBottom, useStickToBottomContext } from '$lib/index.js'
 import Message from './message.svelte'
 import { useFakeMessages } from './useFakeMessages.svelte.js'
 
-interface MessageSegment {
-  text: string
-  tag?: 'h1'
-}
-
 let speed = $state(0.2)
 </script>
 
-{#snippet MessagesContent(messages: MessageSegment[][])}
+{#snippet MessagesContent(messages: string[][])}
   {@const { stopScroll } = useStickToBottomContext()}
 
   <div class="relative w-full flex flex-col overflow-hidden">
@@ -26,11 +21,7 @@ let speed = $state(0.2)
       {#each messages as message, i (i)}
         <Message>
           {#each message as segment}
-            {#if segment.tag}
-              <h1>{segment.text}</h1>
-            {:else}
-              {segment.text}
-            {/if}
+            {@html segment}
           {/each}
         </Message>
       {/each}

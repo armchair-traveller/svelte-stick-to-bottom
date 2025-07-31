@@ -2,13 +2,8 @@ import { LoremIpsum } from 'lorem-ipsum'
 
 const lorem = new LoremIpsum()
 
-interface MessageSegment {
-  text: string
-  tag?: 'h1'
-}
-
 export function useFakeMessages(speed = 1) {
-  let messages = $state<MessageSegment[][]>([])
+  let messages = $state<string[][]>([])
 
   const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min)
@@ -30,7 +25,7 @@ export function useFakeMessages(speed = 1) {
         messages = [...messages, []]
       }
 
-      const useH1Tag = Math.random() < 0.1
+      const Tag = Math.random() < 0.1 ? 'h1' : null
 
       let words = getWords()
       if (words > wordCount) {
@@ -41,12 +36,7 @@ export function useFakeMessages(speed = 1) {
       const text = lorem.generateWords(words)
       const lastMessage = newMessages[newMessages.length - 1]
 
-      const segment: MessageSegment = {
-        text,
-        ...(useH1Tag && { tag: 'h1' }),
-      }
-
-      lastMessage.push(segment)
+      lastMessage.push(Tag ? `<${Tag}>${text}</${Tag}>` : text)
       messages = newMessages
 
       wordCount -= words
