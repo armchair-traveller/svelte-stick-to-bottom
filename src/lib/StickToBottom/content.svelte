@@ -5,8 +5,8 @@ export interface ContentProps extends Omit<HTMLAttributes<HTMLDivElement>, 'chil
 </script>
 
 <script lang="ts">
-import type { HTMLAttributes } from 'svelte/elements'
 import type { Snippet } from 'svelte'
+import type { HTMLAttributes } from 'svelte/elements'
 import { useStickToBottomContext, type StickToBottomContext } from './index.js'
 
 const { children, ...props }: ContentProps = $props()

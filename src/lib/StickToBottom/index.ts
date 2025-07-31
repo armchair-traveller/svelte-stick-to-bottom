@@ -4,7 +4,6 @@
 
 import { getContext } from 'svelte'
 import type { Attachment } from 'svelte/attachments'
-import _StickToBottom, { STICK_TO_BOTTOM_CONTEXT } from './stick-to-bottom.svelte'
 import {
   type GetTargetScrollTop,
   type ScrollToBottom,
@@ -12,6 +11,7 @@ import {
   type StopScroll,
 } from '../useStickToBottom.svelte'
 import _Content, { type ContentProps as _ContentProps } from './content.svelte'
+import _StickToBottom, { STICK_TO_BOTTOM_CONTEXT } from './stick-to-bottom.svelte'
 
 export interface StickToBottomContext {
   content: Attachment<HTMLElement>

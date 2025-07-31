@@ -9,12 +9,11 @@ export const STICK_TO_BOTTOM_CONTEXT = Symbol('stick-to-bottom')
 
 <!-- svelte-ignore state_referenced_locally -->
 <script lang="ts">
-import type { HTMLAttributes } from 'svelte/elements'
-import { type StickToBottomContext } from './index.js'
-import type { StickToBottomInstance, StickToBottomOptions, GetTargetScrollTop } from '$lib/useStickToBottom.svelte.js'
-import type { Snippet } from 'svelte'
-import { setContext } from 'svelte'
+import type { GetTargetScrollTop, StickToBottomInstance, StickToBottomOptions } from '$lib/useStickToBottom.svelte.js'
 import { useStickToBottom } from '$lib/useStickToBottom.svelte.js'
+import { setContext, type Snippet } from 'svelte'
+import type { HTMLAttributes } from 'svelte/elements'
+import type { StickToBottomContext } from './index.js'
 
 let {
   instance,
