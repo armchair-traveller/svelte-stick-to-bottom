@@ -2,14 +2,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { GetTargetScrollTop, ScrollToBottom, StickToBottomState, StopScroll } from '$lib/useStickToBottom.svelte'
 import { getContext } from 'svelte'
 import type { Attachment } from 'svelte/attachments'
-import {
-  type GetTargetScrollTop,
-  type ScrollToBottom,
-  type StickToBottomState,
-  type StopScroll,
-} from '../useStickToBottom.svelte'
 import _Content, { type ContentProps as _ContentProps } from './content.svelte'
 import _StickToBottom, { STICK_TO_BOTTOM_CONTEXT } from './stick-to-bottom.svelte'
 
